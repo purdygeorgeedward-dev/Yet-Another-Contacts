@@ -35,6 +35,27 @@ private val GEL_AVATAR_PALETTE = intArrayOf(
 )
 
 /**
+ * Rotates a color's hue by the given number of degrees (0-360), leaving
+ * saturation and value untouched - shifts the whole palette together while
+ * preserving how saturated/light each individual color is.
+ */
+private fun rotateHue(color: Int, degrees: Int): Int {
+    if (degrees == 0) {
+        return color
+    }
+
+    val hsv = FloatArray(3)
+    Color.colorToHSV(color, hsv)
+    hsv[0] = (hsv[0] + degrees).mod(360f)
+    return Color.HSVToColor(Color.alpha(color), hsv)
+}
+
+private fun Context.getGelPaletteColor(key: String): Int {
+    val baseColor = GEL_AVATAR_PALETTE[abs(key.hashCode()) % GEL_AVATAR_PALETTE.size]
+    return rotateHue(baseColor, config.gelAvatarHueShift)
+}
+
+/**
  * Draws the gel circle base (gradient body, darker rim, soft specular
  * highlight) shared by both the contact letter avatar and the group icon -
  * same visual language as the Messages app's gel bubble theme
@@ -90,7 +111,7 @@ private fun drawGelCircleBase(canvas: Canvas, size: Int, baseColor: Int) {
 fun Context.createGelContactAvatar(name: String): Bitmap {
     val letter = name.getNameLetter()
     val size = resources.getDimension(org.fossify.commons.R.dimen.normal_icon_size).toInt()
-    val baseColor = GEL_AVATAR_PALETTE[abs(name.hashCode()) % GEL_AVATAR_PALETTE.size]
+    val baseColor = getGelPaletteColor(name)
 
     val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
@@ -120,7 +141,7 @@ fun Context.createGelContactAvatar(name: String): Bitmap {
  */
 fun Context.createGelGroupIcon(title: String): Bitmap {
     val size = resources.getDimension(org.fossify.commons.R.dimen.normal_icon_size).toInt()
-    val baseColor = GEL_AVATAR_PALETTE[abs(title.hashCode()) % GEL_AVATAR_PALETTE.size]
+    val baseColor = getGelPaletteColor(title)
 
     val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
+import android.widget.SeekBar
 import android.widget.Toast
 import org.fossify.commons.dialogs.FilePickerDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
@@ -26,6 +27,8 @@ class SettingsActivity : SimpleActivity() {
     companion object {
         private const val PICK_IMPORT_SOURCE_INTENT = 1
         private const val PICK_EXPORT_FILE_INTENT = 2
+        private const val MAX_HUE_DEGREES = 360
+        private const val GEL_AVATAR_PREVIEW_LETTER = "A"
     }
 
     private val binding by viewBinding(ActivitySettingsBinding::inflate)
@@ -48,6 +51,7 @@ class SettingsActivity : SimpleActivity() {
         setupManageShownTabs()
         setupFontSize()
         setupUseEnglish()
+        setupGelAvatarHueShift()
         setupLanguage()
         setupShowContactThumbnails()
         setupShowPhoneNumbers()
@@ -147,6 +151,33 @@ class SettingsActivity : SimpleActivity() {
             config.useEnglish = binding.settingsUseEnglish.isChecked
             exitProcess(0)
         }
+    }
+
+    // Live preview uses the real createGelContactAvatar() renderer (a fixed
+    // "A" placeholder name, since the preview isn't about any specific
+    // contact) rather than a separate simplified preview, so what's shown
+    // here is pixel-for-pixel what contacts will actually look like -
+    // never two rendering paths that could quietly drift apart.
+    private fun setupGelAvatarHueShift() {
+        binding.settingsGelAvatarHueSeekbar.max = MAX_HUE_DEGREES
+        binding.settingsGelAvatarHueSeekbar.progress = config.gelAvatarHueShift
+        updateGelAvatarPreview()
+
+        binding.settingsGelAvatarHueSeekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    config.gelAvatarHueShift = progress
+                    updateGelAvatarPreview()
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+    }
+
+    private fun updateGelAvatarPreview() {
+        binding.settingsGelAvatarPreview.setImageBitmap(createGelContactAvatar(GEL_AVATAR_PREVIEW_LETTER))
     }
 
     private fun setupLanguage() {

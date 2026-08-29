@@ -60,6 +60,8 @@ const val VIBER = "viber"
 const val TELEGRAM = "telegram"
 const val THREEMA = "threema"
 
+const val GEL_AVATAR_HUE_SHIFT = "gel_avatar_hue_shift"
+
 
 // 6 am is the hardcoded automatic backup time, intervals shorter than 1 day are not yet supported.
 fun getNextAutoBackupTime(): DateTime {

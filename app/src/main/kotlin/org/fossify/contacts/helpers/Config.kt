@@ -18,4 +18,11 @@ class Config(context: Context) : BaseConfig(context) {
         set(autoBackupContactSources) = prefs.edit().remove(AUTO_BACKUP_CONTACT_SOURCES).putStringSet(AUTO_BACKUP_CONTACT_SOURCES, autoBackupContactSources)
             .apply()
 
+    // Degrees, 0-360. Rotates every color in the gel avatar/group-icon palette
+    // together (via HSV hue rotation, saturation/value untouched) rather than
+    // needing 8 separate color pickers - one slider retints the whole palette
+    // while preserving the relative hue spacing between the 8 base colors.
+    var gelAvatarHueShift: Int
+        get() = prefs.getInt(GEL_AVATAR_HUE_SHIFT, 0)
+        set(gelAvatarHueShift) = prefs.edit().putInt(GEL_AVATAR_HUE_SHIFT, gelAvatarHueShift).apply()
 }
