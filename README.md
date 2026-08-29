@@ -91,11 +91,29 @@ Download the app now and elevate your contact management to new heights. Your jo
   Doesn't touch or wrap Commons' `getContactLetterIcon()` itself - that's
   compiled library code this app can't modify (confirmed it's a remote
   Gradle dependency, not a locally-vendored module, before deciding how to
-  approach this). Deliberately left that function's **other** call site
-  (the launcher shortcut icon, for pinning a contact to the home screen)
-  untouched and still using the original flat icon - that one is subject
-  to Android's own adaptive-icon masking on whatever launcher the user has,
-  which is outside this app's control and riskier to introduce new
+  approach this).
+
+  **Now covers every rendering call site, not just the main list.**
+  Searched the codebase for every place a flat colored circle gets built
+  and found three more: `SelectContactsAdapter` (the multi-select "pick
+  contacts" screen) and `AutoCompleteTextViewAdapter` (the recipient
+  autocomplete dropdown) reuse `createGelContactAvatar()` directly.
+  `GroupsAdapter` needed its own `createGelGroupIcon()` - groups use a
+  different Commons function (`getColoredGroupIcon()`, compositing
+  `ic_group_circle_bg` + `ic_people_vector` rather than a letter) -
+  fetched both from the real Commons source before replicating them,
+  reusing the exact same people-icon glyph at the same inset the flat
+  version used, so it reads as one consistent gel system rather than two
+  different treatments. `GelAvatar.kt` was refactored to pull the shared
+  gradient/rim/highlight drawing into one `drawGelCircleBase()` function
+  both avatar and group-icon builders call, instead of duplicating it.
+
+  Deliberately left **one** call site untouched: `getContactLetterIcon()`
+  used for the launcher shortcut icon (pinning a contact to the home
+  screen, in `ContactsAdapter.getShortcutImage()`) still uses the
+  original flat icon - that one is subject to Android's own
+  adaptive-icon masking on whatever launcher the user has, which is
+  outside this app's control and riskier to introduce new
   gradient/highlight artwork into without a device to verify it on.
 
   **Not verified on a real device** - reasoned from the actual `Canvas`/
