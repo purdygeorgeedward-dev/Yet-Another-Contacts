@@ -1,6 +1,5 @@
 package org.fossify.contacts.adapters
 
-import android.graphics.drawable.BitmapDrawable
 import android.util.SparseArray
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -8,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.graphics.drawable.toDrawable
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.bumptech.glide.Glide
@@ -15,7 +15,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
 import org.fossify.commons.extensions.*
-import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.models.contacts.Contact
 import org.fossify.commons.views.MyAppCompatCheckbox
 import org.fossify.commons.views.MyRecyclerView
@@ -23,6 +22,7 @@ import org.fossify.contacts.activities.SimpleActivity
 import org.fossify.contacts.databinding.ItemAddFavoriteWithNumberBinding
 import org.fossify.contacts.databinding.ItemAddFavoriteWithoutNumberBinding
 import org.fossify.contacts.extensions.config
+import org.fossify.contacts.extensions.createGelContactAvatar
 
 class SelectContactsAdapter(
     val activity: SimpleActivity, var contacts: ArrayList<Contact>, private val selectedContacts: ArrayList<Contact>, private val allowPickMultiple: Boolean,
@@ -139,7 +139,7 @@ class SelectContactsAdapter(
                         else -> contact.firstName
                     }
 
-                    val placeholderImage = BitmapDrawable(root.resources, SimpleContactsHelper(root.context).getContactLetterIcon(avatarName))
+                    val placeholderImage = root.context.createGelContactAvatar(avatarName).toDrawable(root.resources)
 
                     if (contact.photoUri.isEmpty() && contact.photo == null) {
                         contactTmb.setImageDrawable(placeholderImage)

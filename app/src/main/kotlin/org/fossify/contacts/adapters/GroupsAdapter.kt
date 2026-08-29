@@ -4,6 +4,7 @@ import android.util.TypedValue
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.graphics.drawable.toDrawable
 import com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
 import org.fossify.commons.adapters.MyRecyclerViewAdapter
 import org.fossify.commons.dialogs.ConfirmationDialog
@@ -12,7 +13,6 @@ import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.extensions.groupsDB
 import org.fossify.commons.extensions.highlightTextPart
 import org.fossify.commons.helpers.ContactsHelper
-import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.helpers.TAB_GROUPS
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.models.contacts.Group
@@ -22,6 +22,7 @@ import org.fossify.contacts.activities.SimpleActivity
 import org.fossify.contacts.databinding.ItemGroupBinding
 import org.fossify.contacts.dialogs.RenameGroupDialog
 import org.fossify.contacts.extensions.config
+import org.fossify.contacts.extensions.createGelGroupIcon
 import org.fossify.contacts.interfaces.RefreshContactsListener
 
 class GroupsAdapter(
@@ -170,7 +171,7 @@ class GroupsAdapter(
 
             groupTmb.beVisibleIf(showContactThumbnails)
             if (showContactThumbnails) {
-                groupTmb.setImageDrawable(SimpleContactsHelper(activity).getColoredGroupIcon(group.title))
+                groupTmb.setImageDrawable(activity.createGelGroupIcon(group.title).toDrawable(activity.resources))
             }
         }
     }
