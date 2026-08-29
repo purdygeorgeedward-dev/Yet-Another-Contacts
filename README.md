@@ -74,3 +74,31 @@ Download the app now and elevate your contact management to new heights. Your jo
   and confirmed against Commons' real source, not measured against a
   live large contact list, since this environment has neither a device
   nor test contact data at that scale.
+
+- **Glossy "gel bubble" contact avatars** - contact list thumbnails that
+  have no photo now get a glossy gradient circle with a specular highlight
+  instead of a flat-color letter icon, matching the visual language of
+  Yet-Another-Messages-App's gel bubble theme. `extensions/GelAvatar.kt`
+  draws this on a `Canvas` (gradient body, darker rim, radial-gradient
+  highlight, letter on top) rather than as a `Drawable`, since it needs to
+  composite text the same way the function it replaces already does.
+  Picked a vivid, Aqua-era 8-color palette (sky blue, emerald, hot pink,
+  amber, purple, teal, coral, gold) - same hash-based per-contact color
+  selection as Commons' own `getContactLetterIcon()` (same name always
+  gets the same color), just a more vivid palette and gel rendering
+  instead of a flat fill.
+
+  Doesn't touch or wrap Commons' `getContactLetterIcon()` itself - that's
+  compiled library code this app can't modify (confirmed it's a remote
+  Gradle dependency, not a locally-vendored module, before deciding how to
+  approach this). Deliberately left that function's **other** call site
+  (the launcher shortcut icon, for pinning a contact to the home screen)
+  untouched and still using the original flat icon - that one is subject
+  to Android's own adaptive-icon masking on whatever launcher the user has,
+  which is outside this app's control and riskier to introduce new
+  gradient/highlight artwork into without a device to verify it on.
+
+  **Not verified on a real device** - reasoned from the actual `Canvas`/
+  `Paint`/`Shader` APIs (all pure platform, no dependency-availability
+  question the way `androidx.core.graphics.ColorUtils` was for the
+  Messages version), not confirmed against a live render.

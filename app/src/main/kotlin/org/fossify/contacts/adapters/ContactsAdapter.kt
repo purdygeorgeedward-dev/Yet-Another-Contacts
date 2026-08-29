@@ -41,6 +41,7 @@ import org.fossify.contacts.activities.SimpleActivity
 import org.fossify.contacts.activities.ViewContactActivity
 import org.fossify.contacts.dialogs.CreateNewGroupDialog
 import org.fossify.contacts.extensions.config
+import org.fossify.contacts.extensions.createGelContactAvatar
 import org.fossify.contacts.extensions.editContact
 import org.fossify.contacts.extensions.shareContacts
 import org.fossify.contacts.helpers.*
@@ -441,8 +442,7 @@ class ContactsAdapter(
             }
 
             if (showContactThumbnails) {
-                val placeholderImage =
-                    SimpleContactsHelper(context).getContactLetterIcon(fullName).toDrawable(resources)
+                val placeholderImage = context.createGelContactAvatar(fullName).toDrawable(resources)
                 if (contact.photoUri.isEmpty() && contact.photo == null) {
                     findViewById<ImageView>(org.fossify.commons.R.id.item_contact_image).setImageDrawable(placeholderImage)
                 } else {
