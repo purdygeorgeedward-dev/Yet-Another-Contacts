@@ -120,3 +120,17 @@ Download the app now and elevate your contact management to new heights. Your jo
   `Paint`/`Shader` APIs (all pure platform, no dependency-availability
   question the way `androidx.core.graphics.ColorUtils` was for the
   Messages version), not confirmed against a live render.
+
+- **Gel avatar hue slider.** The 8-color palette above was completely
+  fixed with no user control. New Settings section ("Avatar appearance")
+  with a `SeekBar` (0-360°, default 0 - no change until touched) that
+  rotates every palette color's hue together via real
+  `Color.colorToHSV`/`HSVToColor`, saturation and value left alone, so
+  the palette shifts as a set rather than washing out or darkening. A
+  slider fits this better than 8 individual color pickers since the
+  palette's whole point is varied-but-coordinated per-contact colors.
+  The live preview next to the slider calls the actual
+  `createGelContactAvatar()` renderer rather than a separate simplified
+  preview, so what's shown while dragging is exactly what contacts will
+  look like, not an approximation that could drift from the real
+  rendering over time.
