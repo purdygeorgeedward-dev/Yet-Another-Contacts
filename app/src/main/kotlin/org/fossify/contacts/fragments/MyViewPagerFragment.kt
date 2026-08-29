@@ -2,6 +2,8 @@ package org.fossify.contacts.fragments
 
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.ViewGroup
 import android.widget.RelativeLayout
@@ -32,6 +34,7 @@ import org.fossify.contacts.helpers.AVOID_CHANGING_TEXT_TAG
 import org.fossify.contacts.helpers.AVOID_CHANGING_VISIBILITY_TAG
 import org.fossify.contacts.helpers.Config
 import org.fossify.contacts.helpers.GROUP
+import org.fossify.contacts.helpers.SEARCH_DEBOUNCE_MS
 import org.fossify.contacts.interfaces.RefreshContactsListener
 import java.util.Locale
 
@@ -46,8 +49,32 @@ abstract class MyViewPagerFragment<Binding : MyViewPagerFragment.InnerBinding>(c
     private lateinit var config: Config
     protected lateinit var innerBinding: Binding
 
+    // onSearchQueryChanged fires on every keystroke with no debouncing
+    // anywhere upstream (confirmed against Commons' MySearchMenu source -
+    // its callback is invoked directly, with no delay). Its filter/sort
+    // logic scans every field of every contact synchronously on whichever
+    // thread calls it, which for a large contact list can visibly stall
+    // input while actively typing. Debounced here rather than moved to a
+    // background thread - contactsIgnoringSearch is a plain var reassigned
+    // elsewhere on the main thread, and this pass isn't the place to take
+    // on auditing every mutation site for a background-thread-safe rewrite.
+    private val searchDebounceHandler = Handler(Looper.getMainLooper())
+    private var searchDebounceRunnable: Runnable? = null
+
     var skipHashComparing = false
     var forceListRedraw = false
+
+    // ViewPagerAdapter inflates a brand-new instance of this view every time
+    // its page scrolls back into range - the old one is just detached, not
+    // destroyed in any lifecycle sense this class defines. Without this, a
+    // pending debounced search from searchDebounceHandler could still fire
+    // ~300ms later against a view nobody can see. Harmless (updates an
+    // invisible view's own bindings, not a global/shared object), but
+    // pointless work worth skipping.
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        searchDebounceRunnable?.let { searchDebounceHandler.removeCallbacks(it) }
+    }
 
     fun setupFragment(activity: SimpleActivity) {
         config = activity.config
@@ -308,6 +335,13 @@ abstract class MyViewPagerFragment<Binding : MyViewPagerFragment.InnerBinding>(c
     }
 
     fun onSearchQueryChanged(text: String) {
+        searchDebounceRunnable?.let { searchDebounceHandler.removeCallbacks(it) }
+        val runnable = Runnable { performSearchQuery(text) }
+        searchDebounceRunnable = runnable
+        searchDebounceHandler.postDelayed(runnable, SEARCH_DEBOUNCE_MS)
+    }
+
+    private fun performSearchQuery(text: String) {
         val adapter = innerBinding.fragmentList.adapter
         val fixedText = text.trim().replace("\\s+".toRegex(), " ")
         if (adapter is ContactsAdapter) {

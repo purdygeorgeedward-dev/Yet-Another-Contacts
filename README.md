@@ -44,3 +44,33 @@ Download the app now and elevate your contact management to new heights. Your jo
 <img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_en-US.png" width="30%">
 <img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_en-US.png" width="30%">
 </div>
+---
+
+## Fork changes (Yet-Another-Contacts)
+
+- **Debounced contact/group search.** `onSearchQueryChanged()` was wired
+  directly to the search box's text-changed callback with no debouncing
+  anywhere in the chain - confirmed against Fossify Commons' actual
+  `MySearchMenu` source, which invokes its callback immediately on every
+  change with no delay. The filter itself scans every field (name,
+  nickname, phone numbers, emails, addresses, IMs, notes, organization,
+  websites) of every contact, then sorts the result - synchronously, on
+  whichever thread calls it. For a large contact list, that's real,
+  repeated, avoidable work on every single keystroke while typing,
+  something that can visibly stall input. Added a 300ms debounce (only the
+  delay before the existing logic runs - the logic itself is unchanged),
+  plus cleanup on `onDetachedFromWindow()` so a pending debounced search
+  can't fire ~300ms later against a view that's already been recycled by
+  the ViewPager (harmless if it did - it'd just update an invisible view's
+  own bindings, not a shared object - but pointless work worth skipping).
+
+  Deliberately did **not** move the actual filtering/sorting work to a
+  background thread in the same pass, even though that's the more complete
+  fix - `contactsIgnoringSearch` is a plain `var` reassigned elsewhere on
+  the main thread, and doing that safely means auditing every mutation
+  site for a data race, which is real, separate work beyond a debounce.
+
+  **Not verified on a real device** - reasoned from the actual call chain
+  and confirmed against Commons' real source, not measured against a
+  live large contact list, since this environment has neither a device
+  nor test contact data at that scale.
