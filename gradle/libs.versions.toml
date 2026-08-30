@@ -17,7 +17,7 @@ indicatorfastscroll = "4524cd0b61"
 #Room
 room = "2.8.4"
 #Fossify
-commons = "6.1.6"
+commons = "f3abb4475d"
 #Gradle
 gradlePlugins-agp = "9.3.1"
 #build
@@ -42,7 +42,7 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 #Compose
 compose-detekt = { module = "io.nlopez.compose.rules:detekt", version.ref = "detektCompose" }
 #Fossify
-fossify-commons = { module = "org.fossify:commons", version.ref = "commons" }
+fossify-commons = { module = "com.github.purdygeorgeedward-dev:Yet-Another-Commons", version.ref = "commons" }
 [bundles]
 room = [
     "androidx-room-ktx",
