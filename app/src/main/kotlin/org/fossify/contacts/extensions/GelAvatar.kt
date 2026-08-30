@@ -13,6 +13,7 @@ import org.fossify.commons.extensions.darkenColor
 import org.fossify.commons.extensions.getContrastColor
 import org.fossify.commons.extensions.getNameLetter
 import org.fossify.commons.extensions.lightenColor
+import org.fossify.commons.extensions.rotateHue
 import kotlin.math.abs
 
 /**
@@ -34,25 +35,9 @@ private val GEL_AVATAR_PALETTE = intArrayOf(
     Color.parseColor("#EAB308")  // gold
 )
 
-/**
- * Rotates a color's hue by the given number of degrees (0-360), leaving
- * saturation and value untouched - shifts the whole palette together while
- * preserving how saturated/light each individual color is.
- */
-private fun rotateHue(color: Int, degrees: Int): Int {
-    if (degrees == 0) {
-        return color
-    }
-
-    val hsv = FloatArray(3)
-    Color.colorToHSV(color, hsv)
-    hsv[0] = (hsv[0] + degrees).mod(360f)
-    return Color.HSVToColor(Color.alpha(color), hsv)
-}
-
 private fun Context.getGelPaletteColor(key: String): Int {
     val baseColor = GEL_AVATAR_PALETTE[abs(key.hashCode()) % GEL_AVATAR_PALETTE.size]
-    return rotateHue(baseColor, config.gelAvatarHueShift)
+    return baseColor.rotateHue(config.gelAvatarHueShift)
 }
 
 /**
